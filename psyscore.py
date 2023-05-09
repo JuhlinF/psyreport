@@ -1,7 +1,5 @@
 """Module for parsing Pearson Q-Interactive-style result files"""
 
-import datetime
-import os
 from zipfile import ZipFile
 
 
@@ -14,6 +12,9 @@ class Battery:
         self.indices = []
         self.subtests = []
 
+    def __str__(self) -> str:
+        return f"Battery ({', '.join([str(index) for index in self.indices])})"
+
 
 class IndexScale:
     """
@@ -23,11 +24,13 @@ class IndexScale:
     def __init__(self) -> None:
         self.name = ""
         self.description = ""
-        self.score = None
-        self.percentile = None
+        self.score = int()
+        self.percentile = int()
         self.confidence_intervals = {}
-
         self.subtests = []
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.score})"
 
 
 class Subtest:
@@ -38,26 +41,80 @@ class Subtest:
     def __init__(self) -> None:
         self.name = ""
         self.description = ""
-        self.score = None
-        self.raw_score = None
+        self.score = int()
+        self.raw_score = int()
+
+    def __str__(self) -> str:
+        return f"Subtest {self.name} ({self.score})"
 
 
 def parse_pearson_zipfile(path: str):
-    zf = ZipFile(path)
+    """
+    Parse a file exported from Pearson Q-Interactive.
+    """
+    zipfile = ZipFile(path)
 
-    tmp = zf.namelist()[0]
-    dir, file_name = os.path.split(tmp)
-    file_name = os.path.splitext(file_name)[0]
+    filename = str()
+    for filename in zipfile.namelist():
+        if filename.endswith(".csv"):
+            break
 
-    test_id, date_str = dir.split("_", 1)
+    with zipfile.open(filename) as csv_file:
+        lines = csv_file.read().decode("utf-16").splitlines()
 
-    battery_name = file_name.split(dir)[1].split("_")[0]
-    m, d, y = date_str.split("_")
-    m, d, y = int(m), int(d), int(y)
-    date = datetime.date(y, m, d)
+    battery = Battery()
 
-    print(f"Test ID: {test_id}\nBattery name: {battery_name}\nDate: {date}")
+    subtest_rows = _get_section(lines, "Skalpoäng")
+    for row in subtest_rows:
+        battery.subtests.append(_subtest_from_row(row))
+
+    index_rows = _get_section(lines, "Indexpoäng")
+    for row in index_rows:
+        index = _index_from_row(row)
+        battery.indices.append(index)
+
+    return battery
+
+
+def _get_section(lines: list, section: str) -> list[str]:
+    start = lines.index(section) + 3
+    stop = lines.index("", start)
+    return lines[start:stop]
+
+
+def _index_from_row(row: str) -> IndexScale:
+    index = IndexScale()
+    (
+        name,
+        score,
+        percentile,
+        conf_90_low,
+        conf_90_high,
+        conf_95_low,
+        conf_95_high,
+    ) = row.split(",")
+    index.name = _fix_name(name)
+    index.score = int(score)
+    index.percentile = int(percentile)
+    index.confidence_intervals["90"] = (int(conf_90_low), int(conf_90_high))
+    index.confidence_intervals["95"] = (int(conf_95_low), int(conf_95_high))
+    return index
+
+
+def _fix_name(name: str) -> str:
+    start = name.index(" ") + 1
+    name = name[start:]
+    return name
+
+
+def _subtest_from_row(line: str) -> Subtest:
+    subtest = Subtest()
+    name, _, score = line.split(",")
+    subtest.name = _fix_name(name)
+    subtest.score = int(score)
+    return subtest
 
 
 if __name__ == "__main__":
-    parse_pearson_zipfile("tests/EW202304_4_19_2023.zip")
+    result = parse_pearson_zipfile("tests/EW202304_4_19_2023.zip")
+    print(result)
