@@ -82,6 +82,14 @@ def _get_section(lines: list, section: str) -> list[str]:
     return lines[start:stop]
 
 
+def _subtest_from_row(line: str) -> Subtest:
+    subtest = Subtest()
+    name, _, score = line.split(",")
+    subtest.name = _fix_name(name)
+    subtest.score = int(score)
+    return subtest
+
+
 def _index_from_row(row: str) -> IndexScale:
     index = IndexScale()
     (
@@ -105,14 +113,6 @@ def _fix_name(name: str) -> str:
     start = name.index(" ") + 1
     name = name[start:]
     return name
-
-
-def _subtest_from_row(line: str) -> Subtest:
-    subtest = Subtest()
-    name, _, score = line.split(",")
-    subtest.name = _fix_name(name)
-    subtest.score = int(score)
-    return subtest
 
 
 if __name__ == "__main__":
