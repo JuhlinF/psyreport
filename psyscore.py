@@ -3,17 +3,19 @@
 from zipfile import ZipFile
 
 
-class Battery:
+class Subtest:
     """
-    Class containing information about the test battery results.
+    Class containing information about a subtest.
     """
 
     def __init__(self) -> None:
-        self.indices = []
-        self.subtests = []
+        self.name = str()
+        self.description = str()
+        self.score = int()
+        self.raw_score = int()
 
     def __str__(self) -> str:
-        return f"Battery ({', '.join([str(index) for index in self.indices])})"
+        return f"Subtest {self.name} ({self.score})"
 
 
 class IndexScale:
@@ -22,33 +24,73 @@ class IndexScale:
     """
 
     def __init__(self) -> None:
-        self.name = ""
-        self.description = ""
+        self.short_name = str()
+        self.long_name = str()
+        self.description = str()
         self.score = int()
         self.percentile = int()
-        self.confidence_intervals = {}
-        self.subtests = []
+        self.confidence_intervals = {}  # type dict[str, tuple[int, int]]
+        self.subtests = []  # type: list[Subtest]
+
+    def get_subtest(self, subtest_name: str) -> Subtest | None:
+        """
+        Returns Subtest with name <subtest_name> if it exists, otherwise returns None.
+        """
+        return _find_item(subtest_name, self.subtests, "short_name")
+
+    @property
+    def score_description(self) -> str:
+        """
+        Returns a textual description of the index score.
+        """
+        if self.score in range(0, 70):
+            return "betydligt under genomsnittet"
+        elif self.score in range(71, 85):
+            return "klart under genomsnittet"
+        elif self.score in range(86, 92):
+            return "i genomsnittets nedre del"
+        elif self.score in range(93, 107):
+            return "inom genomsnittet"
+        elif self.score in range(108, 115):
+            return "i genomsnittets övre del"
+        elif self.score in range(116, 130):
+            return "klart över genomsnittet"
+        elif self.score > 130:
+            return "betydligt över genomsnittet"
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.score})"
+        return f"{self.short_name} ({self.score})"
 
 
-class Subtest:
+class Battery:
     """
-    Class containing information about a subtest.
+    Class containing information about the test battery results.
     """
 
     def __init__(self) -> None:
-        self.name = ""
-        self.description = ""
-        self.score = int()
-        self.raw_score = int()
+        self.indices = []  # type: list[IndexScale]
+        self.subtests = []  # type: list[Subtest]
+
+    def get_index(self, index_name: str) -> IndexScale | None:
+        """
+        Returns IndexScale with name <index_name> if it exists, otherwise returns None.
+        """
+        return _find_item(index_name, self.indices, "short_name")
+
+    def get_subtest(self, subtest_name: str) -> Subtest | None:
+        """
+        Returns Subtest with name <subtest_name> if it exists, otherwise returns None.
+        """
+        return _find_item(subtest_name, self.subtests, "short_name")
+
+    def __getitem__(self, item_name: str):
+        return self.get_index(item_name) or self.get_subtest(item_name)
 
     def __str__(self) -> str:
-        return f"Subtest {self.name} ({self.score})"
+        return f"Battery ({', '.join([str(index) for index in self.indices])})"
 
 
-def parse_pearson_zipfile(path: str):
+def parse_pearson_zipfile(path: str) -> Battery:
     """
     Parse a file exported from Pearson Q-Interactive.
     """
@@ -76,6 +118,9 @@ def parse_pearson_zipfile(path: str):
     return battery
 
 
+## Helper functions
+
+
 def _get_section(lines: list, section: str) -> list[str]:
     start = lines.index(section) + 3
     stop = lines.index("", start)
@@ -85,7 +130,7 @@ def _get_section(lines: list, section: str) -> list[str]:
 def _subtest_from_row(line: str) -> Subtest:
     subtest = Subtest()
     name, _, score = line.split(",")
-    subtest.name = _fix_name(name)
+    subtest.name = _shorten_name(name)
     subtest.score = int(score)
     return subtest
 
@@ -101,7 +146,8 @@ def _index_from_row(row: str) -> IndexScale:
         conf_95_low,
         conf_95_high,
     ) = row.split(",")
-    index.name = _fix_name(name)
+    index.long_name = name
+    index.short_name = _shorten_name(name)
     index.score = int(score)
     index.percentile = int(percentile)
     index.confidence_intervals["90"] = (int(conf_90_low), int(conf_90_high))
@@ -109,10 +155,20 @@ def _index_from_row(row: str) -> IndexScale:
     return index
 
 
-def _fix_name(name: str) -> str:
+def _shorten_name(name: str) -> str:
     start = name.index(" ") + 1
     name = name[start:]
     return name
+
+
+def _find_item(search_string: str, search_list: list, search_attr: str):
+    search_string = search_string.casefold().strip()
+    for item in search_list:
+        tmp_name = getattr(item, search_attr).casefold().strip()
+        if tmp_name == search_string or tmp_name.startswith(search_string):
+            return item
+
+    return None
 
 
 if __name__ == "__main__":

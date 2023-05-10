@@ -1,3 +1,38 @@
+VERBAL FUNKTION
+{% with index = battery.verbal %}
+{{ index.long_name }} mäter språklig begreppsbildning, slutledning och tillägnad kunskap. Resultat {{ index.score_description }}. 
+{% endwith %}
+
+VISUOSPATIAL OCH ICKEVERBAL FUNKTION
+{% with index = battery.visuospatial %}
+{{ index.long_name }} mäter kapacitet till bearbetning av visuospatial information, förhållandet mellan delar och helhet och visuomotoriska färdigheter. Resultat {{ index.score_description }}.
+{% endwith %}
+{% with index = battery.fluid %}
+{{ index.long_name }} mäter kapacitet till logisk och abstrakt icke-verbal problemlösning. Resultat {{ index.score_description }}.
+{% endwith %}
+
+ARBETSMINNE
+{% with index = battery.arbetsminne %}
+{{ index.long_name }} mäter visuellt och auditivt uppmärksamhetsspann och kapacitet att bearbeta information i korttidsminnet. Resultat {{ index.score_description }}.
+{% endwith %}
+
+PSYKOMOTORISK FUNKTION
+{% with index = battery.snabbhet %}
+{{ index.long_name }} mäter automatiserad bearbetningshastighet, uppmärksamhet och perceptuell snabbhet. Resultat {{ index.score_description }}.
+{% endwith %}
+
+ALLMÄNBEGÅVNING
+{% with index = battery.ik %}
+{{ index.long_name }} är ett sammansatt mått på kognitiv funktionsnivå. Resultat {{ index.score_description }}.
+{% endwith %}
+
+RESULTATSAMMANSTÄLLNING
+INDEX (standardpoäng, 95% konfidensintervall)
 {% for index in battery.indices %}
-På {{ index.name }} presterade patienten {{ index.score }} standardpoäng.
+{{ index.short_name }}: {{ index.score }}
+{% endfor %}
+
+DELTEST (skalpoäng)
+{% for subtest in battery.subtests %}
+{{ subtest.name }}: {{ subtest.score }}
 {% endfor %}
