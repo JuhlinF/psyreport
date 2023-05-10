@@ -116,5 +116,5 @@ def _fix_name(name: str) -> str:
 
 
 if __name__ == "__main__":
-    result = parse_pearson_zipfile("tests/EW202304_4_19_2023.zip")
+    result = parse_pearson_zipfile("tests/TT111111_4_10_2023.zip")
     print(result)

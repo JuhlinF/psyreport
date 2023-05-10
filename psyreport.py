@@ -22,4 +22,4 @@ def create_report(qi_file: str, template_name: str):
 
 
 if __name__ == "__main__":
-    print(create_report("tests/EW202304_4_19_2023.zip", "plain.txt"))
+    print(create_report("tests/TT111111_4_10_2023.zip", "plain.txt"))
