@@ -39,7 +39,7 @@ class IndexScale:
         return _find_item(subtest_name, self.subtests, "short_name")
 
     @property
-    def score_description(self) -> str:
+    def score_description(self) -> str | None:
         """
         Returns a textual description of the index score.
         """
