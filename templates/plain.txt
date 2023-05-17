@@ -29,7 +29,7 @@ ALLMÄNBEGÅVNING
 RESULTATSAMMANSTÄLLNING
 INDEX (standardpoäng, 95% konfidensintervall)
 {% for index in battery.indices %}
-{{ index.short_name }}: {{ index.score }}
+{{ index.short_name }}: {{ index.score }} ({{ index.ci_95 }})
 {% endfor %}
 
 DELTEST (skalpoäng)
