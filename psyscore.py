@@ -61,7 +61,7 @@ class IndexScale:
     @property
     def ci_95(self):
         return f"{self.confidence_intervals['95'][0]}-{self.confidence_intervals['95'][1]}"
-    
+
     def __str__(self) -> str:
         return f"{self.short_name} ({self.score})"
 
