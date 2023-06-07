@@ -39,27 +39,27 @@ class IndexScale:
         return _find_item(subtest_name, self.subtests, "short_name")
 
     @property
-    def score_description(self) -> str | None:
+    def score_description(self) -> str:
         """
         Returns a textual description of the index score.
         """
-        if self.score in range(0, 70):
+        if self.score in range(0, 71):
             return "betydligt under genomsnittet"
-        elif self.score in range(71, 85):
+        if self.score in range(71, 86):
             return "klart under genomsnittet"
-        elif self.score in range(86, 92):
+        if self.score in range(86, 93):
             return "i genomsnittets nedre del"
-        elif self.score in range(93, 107):
+        if self.score in range(93, 108):
             return "inom genomsnittet"
-        elif self.score in range(108, 115):
+        if self.score in range(108, 116):
             return "i genomsnittets övre del"
-        elif self.score in range(116, 130):
+        if self.score in range(116, 131):
             return "klart över genomsnittet"
-        elif self.score > 130:
-            return "betydligt över genomsnittet"
+
+        return "betydligt över genomsnittet"
 
     @property
-    def ci_95(self):
+    def ci_95(self) -> str:
         return f"{self.confidence_intervals['95'][0]}-{self.confidence_intervals['95'][1]}"
 
     def __str__(self) -> str:
@@ -153,7 +153,7 @@ def _index_from_row(row: str) -> IndexScale:
     index.long_name = name
     index.short_name = _shorten_name(name)
     index.score = int(score)
-    index.percentile = int(percentile)
+    index.percentile = percentile
     index.confidence_intervals["90"] = (int(conf_90_low), int(conf_90_high))
     index.confidence_intervals["95"] = (int(conf_95_low), int(conf_95_high))
     return index
