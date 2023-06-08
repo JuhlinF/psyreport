@@ -6,7 +6,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from psyscore import parse_pearson_zipfile
 
 
-def create_report(qi_file: str, template_name: str):
+def create_report(qi_file, template_name: str):
     """
     Create a report for test in <qi_file> using Jinja2 template <template_name>
     """

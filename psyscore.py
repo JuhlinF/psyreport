@@ -60,6 +60,7 @@ class IndexScale:
 
     @property
     def ci_95(self) -> str:
+        """Return 95 percent confidence interval"""
         return f"{self.confidence_intervals['95'][0]}-{self.confidence_intervals['95'][1]}"
 
     def __str__(self) -> str:
@@ -94,11 +95,11 @@ class Battery:
         return f"Battery ({', '.join([str(index) for index in self.indices])})"
 
 
-def parse_pearson_zipfile(path: str) -> Battery:
+def parse_pearson_zipfile(report_file) -> Battery:
     """
     Parse a file exported from Pearson Q-Interactive.
     """
-    zipfile = ZipFile(path)
+    zipfile = ZipFile(report_file)
 
     filename = str()
     for filename in zipfile.namelist():
