@@ -136,7 +136,7 @@ def _subtest_from_row(line: str) -> Subtest:
     subtest = Subtest()
     name, _, score = line.split(",")
     subtest.name = _shorten_name(name)
-    subtest.score = int(score)
+    subtest.score = score # type: ignore
     return subtest
 
 
