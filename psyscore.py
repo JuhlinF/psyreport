@@ -30,38 +30,35 @@ class IndexScale:
         self.score = int()
         self.percentile = int()
         self.confidence_intervals = {}  # type dict[str, tuple[int, int]]
-        self.subtests = []  # type: list[Subtest]
-
-    def get_subtest(self, subtest_name: str) -> Subtest | None:
-        """
-        Returns Subtest with name <subtest_name> if it exists, otherwise returns None.
-        """
-        return _find_item(subtest_name, self.subtests, "short_name")
 
     @property
     def score_description(self) -> str:
         """
         Returns a textual description of the index score.
         """
-        if self.score in range(0, 71):
+        if 1 <= self.score <= 70:
             return "betydligt under genomsnittet"
-        if self.score in range(71, 86):
+        if 71 <= self.score <= 85:
             return "klart under genomsnittet"
-        if self.score in range(86, 93):
+        if 86 <= self.score <= 92:
             return "i genomsnittets nedre del"
-        if self.score in range(93, 108):
+        if 93 <= self.score <= 107:
             return "inom genomsnittet"
-        if self.score in range(108, 116):
+        if 108 <= self.score <= 115:
             return "i genomsnittets övre del"
-        if self.score in range(116, 131):
+        if 116 <= self.score <= 130:
             return "klart över genomsnittet"
+        if self.score >= 131:
+            return "betydligt över genomsnittet"
 
-        return "betydligt över genomsnittet"
+        raise RuntimeError(f"Bad index score: {self}")
 
     @property
     def ci_95(self) -> str:
         """Return 95 percent confidence interval"""
-        return f"{self.confidence_intervals['95'][0]}-{self.confidence_intervals['95'][1]}"
+        return (
+            f"{self.confidence_intervals['95'][0]}-{self.confidence_intervals['95'][1]}"
+        )
 
     def __str__(self) -> str:
         return f"{self.short_name} ({self.score})"
@@ -105,6 +102,8 @@ def parse_pearson_zipfile(report_file) -> Battery:
     for filename in zipfile.namelist():
         if filename.endswith(".csv"):
             break
+    else:
+        raise RuntimeError("NO CSV file found in ZIP archive")
 
     with zipfile.open(filename) as csv_file:
         lines = csv_file.read().decode("utf-16").splitlines()
@@ -123,7 +122,7 @@ def parse_pearson_zipfile(report_file) -> Battery:
     return battery
 
 
-## Helper functions
+# Helper functions
 
 
 def _get_section(lines: list, section: str) -> list[str]:
@@ -136,7 +135,7 @@ def _subtest_from_row(line: str) -> Subtest:
     subtest = Subtest()
     name, _, score = line.split(",")
     subtest.name = _shorten_name(name)
-    subtest.score = score # type: ignore
+    subtest.score = score  # type: ignore FIXME
     return subtest
 
 
@@ -154,7 +153,7 @@ def _index_from_row(row: str) -> IndexScale:
     index.long_name = name
     index.short_name = _shorten_name(name)
     index.score = int(score)
-    index.percentile = percentile
+    index.percentile = percentile  # type: ignore FIXME
     index.confidence_intervals["90"] = (int(conf_90_low), int(conf_90_high))
     index.confidence_intervals["95"] = (int(conf_95_low), int(conf_95_high))
     return index
